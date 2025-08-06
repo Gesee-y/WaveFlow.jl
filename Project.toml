@@ -11,4 +11,9 @@ PortAudio = "80ea8bcb-4634-5cb3-8ee8-a132660d1d2d"
 SampledSignals = "bd7594eb-a658-542f-9e75-4c4d8908c167"
 
 [compat]
+DSP = "0.7.10"
+FileIO = "1.17.0"
+LibSndFile = "2.4.0"
+PortAudio = "1.3.0"
+SampledSignals = "2.1.4"
 julia = "1.9"
