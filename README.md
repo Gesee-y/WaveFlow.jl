@@ -1,4 +1,4 @@
-# Waves : An audio system in Julia
+# WaveFlow : An audio system in Julia
 
 Julia has been a rising promising language these past years. It has a growing community and wide variety of tools for science. However, the audio ecosystem is quite incomplete. The pieces are there but no one has connected them.
 So here is waves who reuse the existing tools ([LibSndFile.jl](), [PortAudio.jl](), [DSP.jl]() and [SampledSignals.jl]()) to make a ready-to-use audio system, just plug and play.
@@ -6,13 +6,13 @@ So here is waves who reuse the existing tools ([LibSndFile.jl](), [PortAudio.jl]
 ## Installation
 
 ```julia
-julia> ]add Waves
+julia> ]add WaveFlow
 ```
 
 For the development version
 
 ```julia
-julia> ]add https://github.com/Gesee-y/Waves.jl
+julia> ]add https://github.com/Gesee-y/WaveFlow.jl
 ```
 
 ## Features
@@ -44,7 +44,7 @@ play!(snd)
 
 ## Requirement
 
-If you have some expensive computations going at the same time as Wave, you will have to have at least 2 Julia threads enabled to avoid audio lag.
+If you have some expensive computations going at the same time as WaveFlow, you will have to have at least 2 Julia threads enabled to avoid audio lag.
 
 ## License
 
@@ -54,3 +54,4 @@ But note that it rely on some external library with their own license, so you sh
 ## Bug report
 
 Feel free to leave an issue if you encounter a bug.
+
