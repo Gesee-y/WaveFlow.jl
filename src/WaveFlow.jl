@@ -1,4 +1,4 @@
-module Waves
+module WaveFlow
 
 using FileIO: load, loadstreaming
 using LibSndFile
@@ -142,5 +142,6 @@ function write_to_stream(system, output)
         rethrow(e)
     end
 end
+
 
 end # module
