@@ -12,7 +12,8 @@ export WavesSystem, AbstractAudioSource, AudioSource, StreamingAudioSource, Audi
        create_group, add_to_group!, remove_from_group!, create_bus, add_to_bus!, remove_from_bus!,
        add_send!, remove_send!, solo!, mute!, add_effect!, remove_effect!, update_effect_params!,
        create_reverb, create_delay, create_compressor, create_eq_filter,
-       start!, stop!, close!, get_metrics, reset_metrics!, find_source, list_all_sources
+       start!, stop!, close!, get_metrics, reset_metrics!, find_source, list_all_sources, samplerate,
+       buffersize
 
 
 include("core.jl")
@@ -42,12 +43,12 @@ ws = init_waves(44100.0, 1024)
 ```
 """
 function init_waves(sample_rate::Float64=44100.0, buffer_size::Int=1024)
-    #try
+    try
         PortAudio.initialize()
         return WavesSystem(sample_rate, buffer_size)
-    #catch e
-    #    throw(AudioError("Failed to initialize the audio system: $(showerror(stdout,e))"))
-    #end
+    catch e
+        throw(AudioError("Failed to initialize the audio system: $(showerror(stdout,e))"))
+    end
 end
 
 """
@@ -107,7 +108,6 @@ Stop the audio system.
 function stop!(system::WavesSystem)
     system.is_running = false
     if system.audio_thread !== nothing
-        wait(system.audio_thread)
         system.audio_thread = nothing
     end
     @info "Audio system stopped."
@@ -143,5 +143,8 @@ function write_to_stream(system, output)
     end
 end
 
+samplerate(sys::WavesSystem) = sys.sample_rate
+buffersize(sys::WavesSystem) = sys.buffer_size
 
 end # module
+
