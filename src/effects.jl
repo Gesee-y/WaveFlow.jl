@@ -1,6 +1,5 @@
 
 
-# Génération de signaux de test
 """
     generate_sine_wave(frequency, duration, sample_rate=44100.0, amplitude=0.5)
 
@@ -185,3 +184,4 @@ function apply_limiter!(signal::Matrix{Float32}, threshold::Float32=0.95)
     end
 
 end
+
