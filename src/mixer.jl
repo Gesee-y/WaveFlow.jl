@@ -110,25 +110,15 @@ function process_group(groups::Vector{AudioGroup}, group_buffer::Matrix{Float32}
         end
 
         fill!(group_buffer, 0.0f0)
-        #process_fade!(group)
+        process_fade!(group)
 
         @inbounds for src in group.sources
             if src.state != PLAYING
                 continue
             end
 
-            #process_fade!(src)
-            channels = src isa AudioSource ? size(src.data, 1) : src.channels
-            total_samples = src isa AudioSource ? size(src.data, 2) : src.total_samples
-
-            get_streaming_buffer!(src, N)
-            buffer::Matrix{Float32} = src.buffer
-            pos = src.buffer_start+1
-            dt = (pos+N-1) > length(buffer) ? length(buffer) : N-1
-            group_buffer .+= buffer[pos:(pos+dt),:]*src.volume
-            src.buffer_start += dt
-
-            src.position += src.speed
+            process_fade!(src)
+            process_source(src, group_buffer, N)
         end
 
         for effect in group.effects
@@ -142,6 +132,51 @@ function process_group(groups::Vector{AudioGroup}, group_buffer::Matrix{Float32}
 
         bus_buffer .+= group_buffer .* group.volume
     end
+end
+
+function process_source(src::AudioSource, group_buffer::Matrix{Float32}, N)
+    channels = size(src.data, 1)
+    total_samples = size(src.data, 2)
+
+    buffer::Matrix{Float32} = get_buffer(src)
+    pos = src.buffer_start+1
+    dt = (pos+N-1) > size(buffer)[1] ? (size(buffer)[1]-pos) : N-1
+
+    if dt < N-1
+        for i in 1:(size(buffer)[2])
+            for j in pos:pos+dt
+                group_buffer[j-pos+1,i] += buffer[j,i]*src.volume
+            end
+        end
+    else
+        group_buffer .+= buffer[pos:(pos+dt),:]*src.volume
+    end
+    src.buffer_start += Int(floor(dt*src.speed))
+
+    src.position += src.speed
+end
+
+function process_source(src::StreamingAudioSource, group_buffer::Matrix{Float32}, N)
+    channels = src.channels
+    total_samples = src.total_samples
+
+    get_streaming_buffer!(src, N)
+    buffer::Matrix{Float32} = get_buffer(src)
+    pos = src.buffer_start+1
+    dt = (pos+N-1) > size(buffer)[1] ? (size(buffer)[1]-pos) : N-1
+
+    if dt < N-1
+        @inbounds for i in 1:(size(buffer)[2])
+            @fastmath @simd for j in pos:pos+dt
+                group_buffer[j-pos+1,i] += buffer[j,i]*src.volume
+            end
+        end
+    else
+        group_buffer .+= buffer[pos:(pos+dt),:]*src.volume
+    end
+    src.buffer_start += Int(floor((N-1)*src.speed))
+
+    src.position += src.speed
 end
 
 is_solo(bus::AudioBus) = bus.solo

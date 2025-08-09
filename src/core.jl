@@ -54,7 +54,7 @@ Represents an in-memory audio source with playback controls.
 mutable struct AudioSource <: AbstractAudioSource
     data::Matrix{Float32}
     sample_rate::Float64
-    position::Float64
+    position::Int
     speed::Float64
     volume::Float64
     target_volume::Float64
@@ -62,14 +62,13 @@ mutable struct AudioSource <: AbstractAudioSource
     fade_counter::Int
     state::PlayState
     loop::Bool
-    start_offset::Float64
-    end_offset::Float64
+    buffer_start::Int
     id::String
     lock::ReentrantLock
 
     function AudioSource(data, sr, id="")
-        new(data, sr, 1.0, 1.0, 1.0, 1.0, 0, 0, STOPPED, false, 1.0,
-            size(data, 2), isempty(id) ? string(hash(data)) : id, ReentrantLock())
+        new(data, sr, 0, 1.0, 1.0, 1.0, 0, 0, STOPPED, false, 0,
+            isempty(id) ? string(hash(data)) : id, ReentrantLock())
     end
 end
 
@@ -122,7 +121,7 @@ mutable struct StreamingAudioSource <: AbstractAudioSource
     lock::ReentrantLock
 
     function StreamingAudioSource(file_path, sr, channels, total_samples, id="")
-        buffer_samples = 4096#65536  # ~1.5s at 44.1kHz
+        buffer_samples = 65536  # ~1.5s at 44.1kHz
         buffer = zeros(Float32, buffer_samples, channels)
         new(file_path, loadstreaming(file_path), sr, channels, total_samples, buffer, 0, buffer_samples,
             1.0, 1.0, 1.0, 1.0, 0, 0, STOPPED, false, 1.0, total_samples,

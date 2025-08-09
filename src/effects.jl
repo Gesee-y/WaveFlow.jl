@@ -15,12 +15,13 @@ Generate a sine wave audio source.
 # Returns
 - `AudioSource`: Sine wave audio source.
 """
-function generate_sine_wave(frequency::Float64, duration::Float64,
-                          sample_rate::Float64=44100.0, amplitude::Float64=0.5)
+function generate_sine_wave(frequency::Real, duration::Real,
+                          sample_rate::Real=44100.0, amplitude::Real=0.5)
     samples = Int(duration * sample_rate)
-    t = (0:samples-1) / sample_rate
+    isodd(samples) && (samples -= 1)
+    t = (0:samples-1)
     data = amplitude * sin.(2π * frequency * t)
-    return AudioSource(reshape(data, 1, :), sample_rate)
+    return AudioSource(reshape(data, samples÷2, 2), sample_rate)
 end
 
 """
@@ -36,11 +37,12 @@ Generate a white noise audio source.
 # Returns
 - `AudioSource`: White noise audio source.
 """
-function generate_white_noise(duration::Float64, sample_rate::Float64=44100.0,
-                            amplitude::Float64=0.1)
+function generate_white_noise(duration::Real, sample_rate::Real=44100.0,
+                            amplitude::Real=0.1)
     samples = Int(duration * sample_rate)
+    isodd(samples) && (samples -= 1)
     data = amplitude * (2 * rand(Float32, samples) .- 1)
-    return AudioSource(reshape(data, 1, :), sample_rate)
+    return AudioSource(reshape(data, samples÷2, 2), sample_rate)
 end
 
 """
@@ -60,8 +62,9 @@ Create a modulable reverb effect.
 function create_reverb(room_size::Float64=0.5, damping::Float64=0.5,
                       wet_level::Float64=0.3, dry_level::Float64=0.7)
     params = Dict(:room_size => room_size, :damping => damping, :wet_level => wet_level, :dry_level => dry_level)
-    function reverb_effect(signal::Vector{Float32}, p::Dict{Symbol, Float64})
-        delay_samples = [Int(0.03 * 44100), Int(0.05 * 44100), Int(0.07 * 44100)]
+    function reverb_effect(signal::SubArray{Float32, 1, Matrix{Float32}}, true},
+        p::Dict{Symbol, Float32})
+        delay_samples = Int[1323, 2205, 3087]
         decay_factors = [0.6 * (1-p[:damping]), 0.4 * (1-p[:damping]), 0.3 * (1-p[:damping])]
         out = copy(signal) * p[:dry_level]
         for (delay, decay) in zip(delay_samples, decay_factors)
@@ -91,7 +94,7 @@ Create a modulable delay effect.
 function create_delay(delay_time::Float64=0.3, feedback::Float64=0.3,
                      wet_level::Float64=0.3, sample_rate::Float64=44100.0)
     params = Dict(:delay_time => delay_time, :feedback => feedback, :wet_level => wet_level, :sample_rate => sample_rate)
-    function delay_effect(signal::Vector{Float32}, p::Dict{Symbol, Float64})
+    function delay_effect(signal::SubArray{Float32, 1, Matrix{Float32}}, p::Dict{Symbol, Float32})
         delay_samples = Int(p[:delay_time] * p[:sample_rate])
         out = copy(signal)
         for i in 1:(length(signal)-delay_samples)
@@ -119,7 +122,7 @@ Create a modulable compressor effect.
 function create_compressor(threshold::Float64=0.7, ratio::Float64=4.0,
                           attack::Float64=0.003, release::Float64=0.1)
     params = Dict(:threshold => threshold, :ratio => ratio, :attack => attack, :release => release)
-    function compressor_effect(signal::Vector{Float32}, p::Dict{Symbol, Float64})
+    function compressor_effect(signal::SubArray{Float32, 1, Matrix{Float32}}, p::Dict{Symbol, Float32})
         out = copy(signal)
         envelope = 0.0
         for i in 1:length(signal)
@@ -157,7 +160,7 @@ Create a modulable EQ filter effect.
 function create_eq_filter(type::Symbol, frequency::Float64, gain::Float64=0.0,
                          q::Float64=1.0, sample_rate::Float64=44100.0)
     params = Dict(:type => type, :frequency => frequency, :gain => gain, :q => q, :sample_rate => sample_rate)
-    function eq_effect(signal::Vector{Float32}, p::Dict{Symbol, Float64})
+    function eq_effect(signal::SubArray{Float32, 1, Matrix{Float32}}, p::Dict{Symbol, Float32})
         if p[:type] == :lowpass
             resp = Lowpass(p[:frequency]; fs=p[:sample_rate])
         elseif p[:type] == :highpass

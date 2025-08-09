@@ -2,7 +2,7 @@
 ####################################################### OPERATIONS ##################################################
 #####################################################################################################################
 
-export add_bus!
+export add_bus!, resume!
 
 """
     load_audio(file_path::String, id::String="", stream::Bool=false)
@@ -32,11 +32,11 @@ function load_audio(file_path::String, id::String=""; stream::Bool=false)
     end
 
     try
-        info = sndfile_info(file_path)
         if stream
-            return StreamingAudioSource(file_path, info.samplerate, info.channels, info.frames, id)
+            info = loadstreaming(file_path).sfinfo
+            return StreamingAudioSource(file_path, info.samplerate, info.channels, info.frames)
         else
-            audio = load(path)
+            audio = load(file_path)
             if size(audio, 2) > 8
                 @warn "File with $(size(audio, 2)) channels, reduced to stereo"
                 audio = audio[:, 1:min(2, size(audio, 2))]
@@ -49,14 +49,14 @@ function load_audio(file_path::String, id::String=""; stream::Bool=false)
                 @warn "Clipped audio detected, normalization applied"
                 data ./= max_val
             end
-            return AudioSource(data, samplerate(audio), id)
+            return AudioSource(data, SampledSignals.samplerate(audio), id)
         end
     catch e
-        if isa(e, LibSndFile.LibSndFileError)
-            throw(UnsupportedFormatError(splitext(file_path)[2]))
-        else
+        #if isa(e, LibSndFile.LibSndFileError)
+        #    throw(UnsupportedFormatError(splitext(file_path)[2]))
+        #else
             rethrow(e)
-        end
+        #end
     end
 end
 
@@ -71,6 +71,19 @@ Start playback of an audio source.
 - `fade_time::Float64`: Fade-in duration in seconds (default: 0.0).
 """
 function play!(src::AbstractAudioSource, fade_time::Float64=0.0)
+    lock(src.lock)
+    try
+        src.state = PLAYING
+        reset(src)
+        if fade_time > 0
+            fade_in!(src, fade_time)
+        end
+    finally
+        unlock(src.lock)
+    end
+end
+
+function resume!(src::AbstractAudioSource, fade_time::Float64=0.0)
     lock(src.lock)
     try
         src.state = PLAYING
@@ -338,7 +351,7 @@ Create a new audio bus.
 """
 create_bus(id::String="") = AudioBus(id)
 
-add_bus!(sys::WavesSystem, bus::AudioBus) = push(sys.buses, bus)
+add_bus!(sys::WavesSystem, bus::AudioBus) = push!(sys.buses, bus)
 
 """
     add_to_bus!(bus::AudioBus, group::AudioGroup)
@@ -535,6 +548,9 @@ function get_streaming_buffer!(src::StreamingAudioSource, buffer_size)
     end
     return src.buffer
 end
+function get_streaming_buffer!(src::AudioSource, buffer_size)
+    return src.data
+end
 
 function get_streaming_sample(src::StreamingAudioSource)
     idx = src.position
@@ -546,9 +562,16 @@ function get_streaming_sample(src::StreamingAudioSource)
     @view src.buffer[buffer_idx, :]
 end
 
-sample_position(src::StreamingAudioSource) = src.position*src.buffer_samples
+get_buffer(src::AudioSource) = src.data
+get_buffer(src::StreamingAudioSource) = src.buffer
+sample_position(src::StreamingAudioSource) = src.position*1024
+sample_position(src::StreamingAudioSource) = src.buffer_start
 eof(src::StreamingAudioSource) = sample_position(src) >= nframes(src.source)
 reset(src::StreamingAudioSource) = begin
     src.position = 0
     seek(src.source, 1)
+end
+reset(src::AudioSource) = begin
+    src.position = 0
+    src.buffer_start = 0
 end
