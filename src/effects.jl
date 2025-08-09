@@ -62,7 +62,7 @@ Create a modulable reverb effect.
 function create_reverb(room_size::Float64=0.5, damping::Float64=0.5,
                       wet_level::Float64=0.3, dry_level::Float64=0.7)
     params = Dict(:room_size => room_size, :damping => damping, :wet_level => wet_level, :dry_level => dry_level)
-    function reverb_effect(signal::SubArray{Float32, 1, Matrix{Float32}}, true},
+    function reverb_effect(signal::SubArray{Float32, 1, Matrix{Float32}},
         p::Dict{Symbol, Float32})
         delay_samples = Int[1323, 2205, 3087]
         decay_factors = [0.6 * (1-p[:damping]), 0.4 * (1-p[:damping]), 0.3 * (1-p[:damping])]
@@ -183,4 +183,5 @@ function apply_limiter!(signal::Matrix{Float32}, threshold::Float32=0.95)
             signal[i] = sign(signal[i]) * threshold
         end
     end
+
 end
