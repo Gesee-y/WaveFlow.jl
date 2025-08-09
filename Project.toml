@@ -1,7 +1,7 @@
 name = "WaveFlow"
 uuid = "d8840e3d-a7fc-463d-bc34-4e391df193a6"
 authors = ["Kaptue Talom Lael <gesee37@gmail.com>"]
-version = "0.1.0"
+version = "1.0.0"
 
 [deps]
 DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
