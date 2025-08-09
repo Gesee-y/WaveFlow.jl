@@ -66,18 +66,18 @@ const LSND2_PATH = joinpath("assets", "long_snd2.ogg")
 		println("You should hear a music")
 		play!(snd1)
 
-		@test snd1.state == Waves.PLAYING
+		@test snd1.state == WaveFlow.PLAYING
 		sleep(3)
 		pause!(snd1)
 		println("The music should have stopped")
-		@test snd1.state == Waves.PAUSED
+		@test snd1.state == WaveFlow.PAUSED
 		sleep(2)
 
         snd2 = load_audio(LSND2_PATH; stream=true)
 		add_to_group!(group, snd2)
 
         resume!(snd1)
-        @test snd1.state == Waves.PLAYING
+        @test snd1.state == WaveFlow.PLAYING
 
         play!(snd2)
         println("You should be hearing 2 music playing at the same time.")
