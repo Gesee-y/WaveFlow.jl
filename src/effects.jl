@@ -14,7 +14,7 @@ Generate a sine wave audio source.
 # Returns
 - `AudioSource`: Sine wave audio source.
 """
-function generate_sine_wave(frequency::Real, duration::Real,
+function generate_sine_wave(;frequency::Real, duration::Real,
                           sample_rate::Real=44100.0, amplitude::Real=0.5)
     samples = Int(duration * sample_rate)
     isodd(samples) && (samples -= 1)
@@ -36,7 +36,7 @@ Generate a white noise audio source.
 # Returns
 - `AudioSource`: White noise audio source.
 """
-function generate_white_noise(duration::Real, sample_rate::Real=44100.0,
+function generate_white_noise(; duration::Real, sample_rate::Real=44100.0,
                             amplitude::Real=0.1)
     samples = Int(duration * sample_rate)
     isodd(samples) && (samples -= 1)
@@ -58,7 +58,7 @@ Create a modulable reverb effect.
 # Returns
 - `ModulableEffect`: Reverb effect with modulable parameters.
 """
-function create_reverb(room_size::Float64=0.5, damping::Float64=0.5,
+function create_reverb(; room_size::Float64=0.5, damping::Float64=0.5,
                       wet_level::Float64=0.3, dry_level::Float64=0.7)
     params = Dict(:room_size => room_size, :damping => damping, :wet_level => wet_level, :dry_level => dry_level)
     function reverb_effect(signal::SubArray{Float32, 1, Matrix{Float32}},
@@ -90,7 +90,7 @@ Create a modulable delay effect.
 # Returns
 - `ModulableEffect`: Delay effect with modulable parameters.
 """
-function create_delay(delay_time::Float64=0.3, feedback::Float64=0.3,
+function create_delay(; delay_time::Float64=0.3, feedback::Float64=0.3,
                      wet_level::Float64=0.3, sample_rate::Float64=44100.0)
     params = Dict(:delay_time => delay_time, :feedback => feedback, :wet_level => wet_level, :sample_rate => sample_rate)
     function delay_effect(signal::SubArray{Float32, 1, Matrix{Float32}}, p::Dict{Symbol, Float32})
@@ -118,7 +118,7 @@ Create a modulable compressor effect.
 # Returns
 - `ModulableEffect`: Compressor effect with modulable parameters.
 """
-function create_compressor(threshold::Float64=0.7, ratio::Float64=4.0,
+function create_compressor(; threshold::Float64=0.7, ratio::Float64=4.0,
                           attack::Float64=0.003, release::Float64=0.1)
     params = Dict(:threshold => threshold, :ratio => ratio, :attack => attack, :release => release)
     function compressor_effect(signal::SubArray{Float32, 1, Matrix{Float32}}, p::Dict{Symbol, Float32})
@@ -156,7 +156,7 @@ Create a modulable EQ filter effect.
 # Returns
 - `ModulableEffect`: EQ filter effect with modulable parameters.
 """
-function create_eq_filter(type::Symbol, frequency::Float64, gain::Float64=0.0,
+function create_eq_filter(; type::Symbol, frequency::Float64, gain::Float64=0.0,
                          q::Float64=1.0, sample_rate::Float64=44100.0)
     params = Dict(:type => type, :frequency => frequency, :gain => gain, :q => q, :sample_rate => sample_rate)
     function eq_effect(signal::SubArray{Float32, 1, Matrix{Float32}}, p::Dict{Symbol, Float32})
