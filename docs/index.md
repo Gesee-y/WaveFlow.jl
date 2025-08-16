@@ -31,7 +31,10 @@ using WaveFlow
 sys = WavesSystem()
 
 # You can customize sample rate and buffer size:
-sys_custom = WavesSystem(sample_rate=48000, buffersize=2048)
+sys_custom = WavesSystem(sample_rate=48000, buffer_size=2048)
+
+# On Linux running pulse (e.g. Ubuntu) you connect to pulse like this:
+sys = WavesSystem(input_device = "pulse", output_device = "pulse")
 ```
 
 * **Sample rate:** Number of audio samples per second. Higher rates increase quality but also CPU load.
