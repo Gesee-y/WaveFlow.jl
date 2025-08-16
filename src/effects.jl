@@ -19,7 +19,7 @@ function generate_sine_wave(;frequency::Real, duration::Real,
     samples = Int(duration * sample_rate)
     isodd(samples) && (samples -= 1)
     t = (0:samples-1)
-    data = amplitude * sin.(2π * frequency * t)
+    data = amplitude * sin.(2π * frequency * t / sample_rate)
     return AudioSource(reshape(data, samples÷2, 2), sample_rate)
 end
 
