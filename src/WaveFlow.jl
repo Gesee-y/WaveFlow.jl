@@ -48,7 +48,7 @@ ws = init_waves(44100.0, 1024)
 function init_waves(sample_rate::Float64=44100.0, buffer_size::Int=1024)
     try
         PortAudio.initialize()
-        return WavesSystem(sample_rate, buffer_size)
+        return WavesSystem(;sample_rate=sample_rate, beffer_size=buffer_size)
     catch e
         throw(AudioError("Failed to initialize the audio system: $(showerror(stdout,e))"))
     end
