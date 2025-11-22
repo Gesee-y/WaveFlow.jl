@@ -279,7 +279,7 @@ mutable struct WavesSystem
     lock::ReentrantLock
     delay::Float32
 
-    function WavesSystem(;sample_rate=44100.0, buffer_size=1024, delay=0.0001, max_chunk_buffer = 64,
+    function WavesSystem(;sample_rate=44100.0, buffer_size=BUFFER_SIZE, delay=0.0001, max_chunk_buffer = MAX_CHANNEL_SIZE,
                          input_device = PortAudio.devices()[1],
                          output_device = PortAudio.get_device(PortAudio.get_default_output_index()))
         # input_device = PortAudio.devices()[device_number]

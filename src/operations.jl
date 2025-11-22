@@ -564,7 +564,8 @@ end
 
 get_buffer(src::AudioSource) = src.data
 get_buffer(src::StreamingAudioSource) = src.buffer
-sample_position(src::StreamingAudioSource) = src.position*1024
+sample_position(audio::WavesSystem, src::StreamingAudioSource) = src.position*audio.buffer_size
+sample_position(src::StreamingAudioSource) = src.position*BUFFER_SIZE
 sample_position(src::StreamingAudioSource) = src.buffer_start
 eof(src::StreamingAudioSource) = sample_position(src) >= nframes(src.source)
 reset(src::StreamingAudioSource) = begin

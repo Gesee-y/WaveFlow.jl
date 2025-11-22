@@ -15,6 +15,9 @@ export WavesSystem, AbstractAudioSource, AudioSource, StreamingAudioSource, Audi
        start!, stop!, close!, get_metrics, reset_metrics!, find_source, list_all_sources, samplerate,
        buffersize
 
+const BUFFER_SIZE = 512
+const STREAM_CHUNK_SIZE = 2^14
+const MAX_CHANNEL_SIZE = 8
 
 include("core.jl")
 include("operations.jl")
